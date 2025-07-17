@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import LoginForm1 from "../login/loginForm1"
 import LoginForm2 from "../login/loginForm2"
 import { LoginForm3 } from "../login/loginForm3"
@@ -70,8 +70,7 @@ const FORM_CONFIGS: Record<TabType, FormConfig[]> = {
 export default function GalleryView() {
   const [activeTab, setActiveTab] = useState<TabType>("login")
 
-  // Memoización de formularios para mejor rendimiento
-  const currentForms = useMemo(() => FORM_CONFIGS[activeTab], [activeTab])
+
 
   // Manejadores optimizados con useCallback
   const handleTabChange = useCallback((tab: TabType) => {
@@ -94,8 +93,23 @@ export default function GalleryView() {
     }
   }, [handleTabChange])
 
+  const polaroidStyles = [
+    "rotate-[-10deg] -translate-x-12 -translate-y-2 z-10",
+    "rotate-[8deg] translate-x-10 -translate-y-4 z-20",
+    "rotate-[-4deg] -translate-x-4 translate-y-2 z-30",
+    "rotate-[6deg] translate-x-6 translate-y-4 z-40",
+    "rotate-[-7deg] -translate-x-8 translate-y-6 z-50",
+    "rotate-[12deg] translate-x-12 translate-y-8 z-60",
+    "rotate-[-14deg] -translate-x-14 translate-y-10 z-70",
+    "rotate-[3deg] translate-x-3 -translate-y-3 z-80",
+    "rotate-[-6deg] -translate-x-6 translate-y-5 z-90",
+    "rotate-[9deg] translate-x-9 -translate-y-6 z-100",
+    "rotate-[-12deg] -translate-x-12 translate-y-7 z-110",
+    "rotate-[5deg] translate-x-5 -translate-y-8 z-120",
+  ];
+
   return (
-    <div className="min-h-screen bg-transparent text-white p-6">
+    <div className="bg-transparent text-white">
       <header className="text-center mb-10">
         <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-xl">
           Galería de Formularios
@@ -116,7 +130,7 @@ export default function GalleryView() {
                   ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black shadow-md"
                   : "text-zinc-400 hover:text-yellow-300"
               }`}
-              onClick={() => handleTabChange(tab)}
+              onClick={() => setActiveTab(tab)}
             >
               {tab === "login" ? "Login" : "Registro"}
             </button>
@@ -125,37 +139,63 @@ export default function GalleryView() {
       </div>
 
       {/* Cards */}
-      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        {currentForms.map((formConfig, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
-            className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-6 shadow-lg backdrop-blur-sm relative"
-          >
-            <div className="absolute top-4 right-4">
-              <span className="text-xs px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full font-semibold shadow">
-                {activeTab === "login" ? "Login" : "Registro"}
-              </span>
+      {activeTab === "login" ? (
+        <div className="fixed inset-0 w-screen h-screen overflow-hidden flex items-center justify-center z-10">
+          {FORM_CONFIGS.login.map((formConfig, index) => (
+            <motion.div
+              key={index}
+              drag
+              dragElastic={0.8}
+              whileTap={{ scale: 1.05, zIndex: 999 }}
+              className={`absolute left-1/2 top-40 w-[400px] max-w-full -translate-x-1/2 cursor-pointer select-none transition-transform duration-300 ${polaroidStyles[index % polaroidStyles.length]}`}
+              style={{ boxShadow: "0 8px 32px 0 rgba(0,0,0,0.25)" }}
+            >
+              <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-8 shadow-lg backdrop-blur-sm relative">
+                <div className="absolute top-4 right-4">
+                  <span className="text-xs px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full font-semibold shadow">
+                    Login
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold mb-6 text-white group-hover:text-yellow-400 transition">
+                  {formConfig.title}
+                </h3>
+                <div className="min-h-[260px] flex items-center justify-center">
+                  {formConfig.component}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          {FORM_CONFIGS.register.map((formConfig, index) => (
+            <div
+              key={index}
+              className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-6 shadow-lg backdrop-blur-sm relative"
+            >
+              <div className="absolute top-4 right-4">
+                <span className="text-xs px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full font-semibold shadow">
+                  Registro
+                </span>
+              </div>
+              <h3 className="text-xl font-bold mb-6 text-white group-hover:text-yellow-400 transition">
+                {formConfig.title}
+              </h3>
+              <div className="min-h-[400px] flex items-center justify-center">
+                {formConfig.component}
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-6 text-white group-hover:text-yellow-400 transition">
-              {formConfig.title}
-            </h3>
-            <div className="min-h-[400px] flex items-center justify-center">
-              {formConfig.component}
-            </div>
-          </motion.div>
-        ))}
-      </main>
+          ))}
+        </div>
+      )}
 
-      {/* Simulated Credentials */}
+      {/* Simulated Credentials 
       <section className="mt-16 max-w-md mx-auto bg-zinc-900/30 rounded-xl border border-zinc-700/40 p-4 text-center text-zinc-300 shadow">
         <h4 className="text-amber-400 font-semibold mb-2">🔐 Credenciales de prueba</h4>
         <p className="text-sm">Email: <span className="text-white">admin@gmail.com</span></p>
         <p className="text-sm">Contraseña: <span className="text-white">admin123</span></p>
         <p className="text-xs text-zinc-500 mt-2 italic">* Solo para demostración visual</p>
-      </section>
+      </section> */}
 
       <footer className="mt-12 text-center text-zinc-500 text-sm">
         <p>
